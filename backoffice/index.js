@@ -1,4 +1,5 @@
 const { idmGraphQLFetch } = require('@learnersguild/idm-jwt-auth/lib/utils')
+const hubspot = require('../hubspot')
 
 const ROBOT_HANDLES = ['echo-bot','lg-bot']
 
@@ -15,28 +16,28 @@ module.exports = class BackOffice {
     return echoGraphQLFetch({query, variables}, this.lgJWT)
   }
 
-  getUser(handle){
-    return this.queryIdm(`
-      query {
-        findUsers(identifiers: ["${handle}"]) {
-          id
-          active
-          email
-          emails
-          handle
-          profileUrl
-          avatarUrl
-          name
-          phone
-          dateOfBirth
-          timezone
-          roles
-          createdAt
-          updatedAt
-        }
-      }
-    `).then(response => response.data.findUsers[0])
-  }
+  // getUser(handle){
+  //   return this.queryIdm(`
+  //     query {
+  //       findUsers(identifiers: ["${handle}"]) {
+  //         id
+  //         active
+  //         email
+  //         emails
+  //         handle
+  //         profileUrl
+  //         avatarUrl
+  //         name
+  //         phone
+  //         dateOfBirth
+  //         timezone
+  //         roles
+  //         createdAt
+  //         updatedAt
+  //       }
+  //     }
+  //   `).then(response => response.data.findUsers[0])
+  // }
 
   getPhasesForLearners(learners){
     const identifiers = JSON.stringify(learners.map(l => l.handle))
@@ -103,6 +104,42 @@ module.exports = class BackOffice {
         learners
           .filter(learner => learner.phase === phaseNumber)
       )
+  }
+
+  getLearnerByHandle(handle){
+    return this.queryIdm(`
+      query {
+        findUsers(identifiers: [${JSON.stringify(handle)}]) {
+          id
+          active
+          email
+          emails
+          handle
+          profileUrl
+          avatarUrl
+          name
+          phone
+          dateOfBirth
+          timezone
+          roles
+          createdAt
+          updatedAt
+        }
+      }
+    `)
+    .then(response => response.data.findUsers[0])
+    .then(idmUser => {
+
+      return idmUser
+        ? hubspot.getUserByEmail(idmUser.email).then(hubspotUser => {
+          console.log({idmUser, hubspotUser})
+          const user = Object.assign({}, idmUser, hubspotUser)
+          // user.idmUser = idmUser
+          // user.hubspotUser = hubspotUser
+          return user
+        })
+        : false
+    })
   }
 }
 

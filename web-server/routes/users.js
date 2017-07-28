@@ -7,6 +7,8 @@ module.exports = app => {
 
   app.get('/users', (request, response, next) => {
     request.backOffice.getActiveLearners().then(users => {
+      response.json(users)
+      return
       response.render('users/index', { users })
     })
     .catch(next)
@@ -14,8 +16,7 @@ module.exports = app => {
 
   app.get('/users/:handle', (request, response, next) => {
     const { handle } = request.params
-    request.backOffice.getActiveLearners().then(users => {
-      const user = users.find(user => user.handle === handle)
+    request.backOffice.getLearnerByHandle(handle).then(user => {
       if (!user) return response.renderNotFound()
       response.render('users/show', { user })
     })

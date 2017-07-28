@@ -1,4 +1,5 @@
 require('../environment')
+require('../environment')
 const https = require('express-sslify').HTTPS
 const express = require('express')
 const compression = require('compression')

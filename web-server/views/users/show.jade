@@ -5,7 +5,10 @@ block content
   h1= user.name
   h3= user.handle
 
-  h6 Phase #{user.phase}
+  if user.exit_phase
+    h6 Exit Phase: #{user.exit_phase}
+  else if user.phase
+    h6 Phase: #{user.phase}
 
   ul.list-inline
     li
@@ -18,3 +21,6 @@ block content
       a(href="https://learnersguild.slack.com/messages/@"+user.handle, target="_blank") Slack DM
 
   img(src=user.avatarUrl)
+
+
+  pre= inspect(user)
