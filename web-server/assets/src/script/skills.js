@@ -58,11 +58,38 @@ const setFilter = filter => {
   filterSkillsList(filter)
 }
 
+const setParam = filter => {
+  if (filter.length < 1)
+    history.pushState(null, null, 'filter')
+  else
+    history.pushState(null, null, `skills?f=${filter}`)
+}
+
 const matchesFilters = (filters, string) => {
   string = string.toLowerCase()
   return filters.every(filter => string.includes(filter))
   return filters.some(filter => string.includes(filter))
 }
+
+const updateQueryStringParam = function (key, value) {
+  const baseUrl = [location.protocol, '//', location.host, location.pathname].join(''),
+      urlQueryString = document.location.search,
+      newParam = key + '=' + value,
+      params = '?' + newParam;
+
+  // If the "search" string exists, then build params from it
+  if (urlQueryString) {
+      keyRegex = new RegExp('([\?&])' + key + '[^&]*');
+
+      // If param exists already, update it
+      if (urlQueryString.match(keyRegex) !== null) {
+          params = urlQueryString.replace(keyRegex, "$1" + newParam);
+      } else { // Otherwise, add it to end of query string
+          params = urlQueryString + '&' + newParam;
+      }
+  }
+  window.history.replaceState({}, "", baseUrl + params);
+};
 
 const filterSkillsList = filter => {
   const filters = filter.trim().toLowerCase().split(/\s+/)
@@ -75,11 +102,14 @@ const filterSkillsList = filter => {
   })
 }
 
+$(document).blur()
+
 $(document).on('keyup', '.skills-list-filter-input', event => {
-  if (event.key === "Escape" )
+  if (event.key === "Escape")
     setFilter('')
   else
     filterSkillsList(event.target.value)
+    setParam(event.target.value)
 })
 
 $(document).on('click', '.skills-list-filter', event => {
